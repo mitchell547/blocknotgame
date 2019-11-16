@@ -6,7 +6,7 @@ Made on Lua and Love2D
 
 Still work in progres...
 
-[!blocknot-scr](/blocknot-scr.gif)
+![blocknot-scr](blocknot-scr.gif)
 
 ------
 Page on itch.io:
