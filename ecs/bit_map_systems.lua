@@ -150,7 +150,8 @@ function System_Map()
                         b.vy = 0
                     end
                     --players[2].x = i * TILESIZE
-                    --players[2].y = id * TILESIZE]]--
+                    --players[2].y = id * TILESIZE
+				]]--
                 elseif j == "ground" then
                     map[i][id].t = j
                     map[i][id].active = true
@@ -226,15 +227,32 @@ function System_Tiles_Drawing(map_)
     local map = map_
     
     -- Initialization
-    local tile_tex = love.graphics.newImage(TILES_PATH)
-    tile_tex:setFilter("nearest", "nearest")
+	local tiles_exist = love.filesystem.exists( TILES_PATH )
+	local tile_tex = nil
+	if tiles_exist then
+		tile_tex = love.graphics.newImage(TILES_PATH)
+		tile_tex:setFilter("nearest", "nearest")
+	end
+	
+	if tile_tex == nil then
+		--TILE_W = 1
+		--TILE_H = 1
+		local tiles_x, tiles_y = 3, 7
+		local canvas = love.graphics.newCanvas(tiles_x * TILE_W, tiles_y * TILE_H)
+		local img_data = canvas:newImageData(0, 1, 0, 0, tiles_x * TILE_W, tiles_y * TILE_H )
+		img_data:mapPixel(function (x, y, r, g, b, a) return 0.7, 0.2, 0.2, 0.0; end)		
+		--img_data:setPixel(0, 4, 0.2, 0.2, 0.2, 0.0)
+		--img_data:setPixel(2, 4, 0.2, 0.2, 0.2, 0.0)
+		img_data:mapPixel(function (x, y, r, g, b, a) return 0.7, 0.7, 0.2, 1.0; end, 2 * TILE_W, 6 * TILE_W, TILE_W, TILE_H)
+		tile_tex = love.graphics.newImage( img_data )
+	end
     
     local tile_batch = love.graphics.newSpriteBatch(tile_tex, (maxw+2)*(maxh+2)*5) 
     
-    local tile_quads = {}    
-    
     local tile_tex_w = tile_tex:getWidth()
     local tile_tex_h = tile_tex:getHeight()
+	
+	local tile_quads = {}   
     tile_quads.center       = love.graphics.newQuad(1*TILE_W, 1*TILE_H, TILE_W, TILE_H, tile_tex_w, tile_tex_h)
     
     tile_quads.left_wall    = love.graphics.newQuad(0*TILE_W, 1*TILE_H, TILE_W, TILE_H, tile_tex_w, tile_tex_h)

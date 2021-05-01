@@ -77,7 +77,20 @@ function Comp_Anim_Sprite(sprite_path, frame_w_, frame_h_, ox, oy)
         revert = false,
         flip_ver = false
     }
-    self.sprite = love.graphics.newImage(sprite_path) 
-    self.sprite:setFilter("nearest", "nearest")
+	spr_exist = love.filesystem.exists( sprite_path)
+	if spr_exist then
+		self.sprite = love.graphics.newImage(sprite_path) 
+		self.sprite:setFilter("nearest", "nearest")
+	else
+		local canvas = love.graphics.newCanvas(1, 1 )
+		local img_data = canvas:newImageData(0, 1, 0, 0, 1, 1 )
+		img_data:setPixel(0, 0, 0.7, 0.2, 0.2, 1.0)
+		self.sprite = love.graphics.newImage(img_data) 
+		self.sprite:setFilter("nearest", "nearest")
+		-- *hardcoded* (tile size = 13)
+		self.frame_w, self.frame_h = 13, 26
+		self.offset.x, self.offset.y = 0, 0		
+	end
+	
     return self
 end

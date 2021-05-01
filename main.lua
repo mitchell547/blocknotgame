@@ -22,9 +22,19 @@ local game_state = "menu"
 
 MUSIC_VOLUME = 0.2
 
-local bg_music = love.audio.newSource("/sounds/stopnlistencut.ogg", 'stream')
+local sounds_exist = love.filesystem.exists("/sounds")
+local bg_music = nil
+if sounds_exist then
+	bg_music = love.audio.newSource("/sounds/stopnlistencut.ogg", 'stream')
+else
+	sound_data = love.sound.newSoundData(1)
+	bg_music = love.audio.newSource(sound_data)
+end
 
 local function setup_music()
+	if not sounds_exist then 
+		return; 
+	end	
     bg_music:setVolume(MUSIC_VOLUME)
     bg_music:setLooping(true)
     bg_music:seek(1.5)
