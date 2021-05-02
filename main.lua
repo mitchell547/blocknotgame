@@ -1,6 +1,5 @@
 
 Game = require "ecs/game"
---beholder = require "beholder"
 require "BtnLib"
 require "main_menu"
 App = require "main_app"
@@ -22,9 +21,9 @@ local game_state = "menu"
 
 MUSIC_VOLUME = 0.2
 
-local sounds_exist = love.filesystem.exists("/sounds")
+local sounds_exist = love.filesystem.getInfo("/sounds")
 local bg_music = nil
-if sounds_exist then
+if sounds_exist ~= nil then
 	bg_music = love.audio.newSource("/sounds/stopnlistencut.ogg", 'stream')
 else
 	sound_data = love.sound.newSoundData(1)
@@ -32,14 +31,13 @@ else
 end
 
 local function setup_music()
-	if not sounds_exist then 
+	if sounds_exist == nil then 
 		return; 
 	end	
     bg_music:setVolume(MUSIC_VOLUME)
     bg_music:setLooping(true)
     bg_music:seek(1.5)
     love.audio.setEffect('myEffect', {type = 'reverb', decaytime=3.0})
-    --love.audio.setEffect('myEffect', {type = 'echo', feedback=0.05, delay=0.05, tapdelay=0.05})
     bg_music:setEffect('myEffect')
     love.audio.play(bg_music)
 end
@@ -61,7 +59,7 @@ end
 
 local SAVEFILE = "/savefile.bnsf"
 
--- Updates existing levels progress (call only after reading all levels)
+-- Updates existing levels progress in current game memory (call this only after loading/reading all levels)
 function readProgress()
     -- TODO: add saving info about missing levels
     --local f = io.open(love.filesystem.getSource( )..SAVEFILE, "r")
@@ -134,7 +132,7 @@ local function chk_lvls_fin()
 end
 
 function love.update(dt)
-    
+    love.window.setTitle(love.timer.getFPS() .. " FPS")
     if game_state == "menu" then
         --menu_btns.Update()
         MenuUpdate()
@@ -154,9 +152,7 @@ end
 
 function love.keypressed(key)
     if key == "m" then
-        if App.music_on then 
-            App.pauseMusic() 
-        else App.playMusic() end
+        App.switchPlayback()
     end
     if game_state == "menu" then
         --menu_btns.Keypressed(key)

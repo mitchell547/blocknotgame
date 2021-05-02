@@ -78,6 +78,7 @@ local f = love.graphics.getFont()
 local menu_state = "menu"   -- "levels"
 local cur_level_pack = 1
 local cur_selected_level = 1
+local music_btn = nil
 
 
 local function main_btns_init()
@@ -97,7 +98,7 @@ local function main_btns_init()
         nil, 
         nil, 
         function() cred_scr.visible = false end)
-    music_btn=menu_btns.CreateButton(100, 160, "music (on)", f, nil, 
+    music_btn = menu_btns.CreateButton(100, 160, "music (on)", f, nil, 
         function() music_scr.visible = true end, 
         nil, 
         function(self)  if parent_app.music_on then 
@@ -116,6 +117,7 @@ end
 local x_left = 200
 local x_offset = 120
 
+-- Create column with fake buttons
 local function dumb_level_init()
     local k = 3
     local pack_name = "in progress"
@@ -149,8 +151,6 @@ local function level_menu_init()
     level_menu = NewButtons()
     level_menu.SetControlKeys('right', 'left')
     fld_list = get_folder_files("levels")
-    
-    
     
     for k, pack_name in pairs(fld_list) do
         level_menu.CreateButton(x_left + (k-1)*x_offset, 160, pack_name, f, nil, 
@@ -199,6 +199,7 @@ end
 
 function MenuUpdate()
     if menu_state == "menu" then
+		-- TODO: implement button update on value update, or create specific "every tick" update function for object
         music_btn.text = "music " .. (parent_app.music_on and "(on)" or "(off)")    -- костыль
         menu_btns.Update()
     elseif menu_state == "levels" then

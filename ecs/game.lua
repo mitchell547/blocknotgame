@@ -152,7 +152,7 @@ function game.load(par_app)
     ecs.addComponent(ent, Comp_Player_Controls())
     ]]--
     f = love.graphics.getFont()    
-	if love.filesystem.exists("fonts/edunline.TTF") then
+	if love.filesystem.getInfo("fonts/edunline.TTF") ~= nil then
 		font2 = love.graphics.newFont("fonts/edunline.TTF", 80)
 	else
 		font2 = love.graphics.newFont(120)    
@@ -211,7 +211,7 @@ function game.reload()
     goal_info.plrs = {}
     game.cur_script.restart()
     physics.Restart()
-    parent_app.musicHiVol()
+    --parent_app.musicHiVol() --??
 end
 
 local function check_levels_finished()    

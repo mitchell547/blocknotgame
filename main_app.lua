@@ -1,8 +1,9 @@
 
 local App = {
     levels = {},
-    music_on = true,
-    game_state = "menu"
+    music_on = true
+	--,
+    --game_state = "menu"
 }
 
 local bg_music = nil
@@ -62,6 +63,14 @@ function App.playMusic()
     bg_music:play()
     --bg_music:setVolume(MUSIC_VOLUME)
     App.music_on = true
+end
+
+function App.switchPlayback()
+	if App.music_on then 
+         App.pauseMusic() 
+    else 
+		App.playMusic() 
+	end
 end
 
 function App.musicLowVol()

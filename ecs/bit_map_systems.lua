@@ -227,9 +227,9 @@ function System_Tiles_Drawing(map_)
     local map = map_
     
     -- Initialization
-	local tiles_exist = love.filesystem.exists( TILES_PATH )
+	local tiles_exist = love.filesystem.getInfo( TILES_PATH )
 	local tile_tex = nil
-	if tiles_exist then
+	if tiles_exist ~= nil then
 		tile_tex = love.graphics.newImage(TILES_PATH)
 		tile_tex:setFilter("nearest", "nearest")
 	end

@@ -77,8 +77,8 @@ function Comp_Anim_Sprite(sprite_path, frame_w_, frame_h_, ox, oy)
         revert = false,
         flip_ver = false
     }
-	spr_exist = love.filesystem.exists( sprite_path)
-	if spr_exist then
+	spr_exist = love.filesystem.getInfo( sprite_path)
+	if spr_exist ~= nil then
 		self.sprite = love.graphics.newImage(sprite_path) 
 		self.sprite:setFilter("nearest", "nearest")
 	else
