@@ -31,15 +31,6 @@ local parent_app = {}
 
 -- todo: make a signal when player cannot activate character
 
-function create_player(mngr, _x, _y)
-    -- this is old
-    local pl = mngr.newEntity()
-    --mngr.addComponent(pl, Comp_Physical_Body(_x, _y, 32, 64))
-    mngr.addComponent(pl, Comp_Physical_Body(_x, _y, 24, 48))
-    mngr.addComponent(pl, Comp_Player_Controls())
-    return pl
-end
-
 local function init_systems()
     -- init
     map = System_Map()

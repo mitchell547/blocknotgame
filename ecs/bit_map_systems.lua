@@ -34,6 +34,7 @@ function System_Map()
         return #players_init
     end
     
+	-- TODO: replace 'num' argument with sprite path; don't forget to make modification in LoadMap method
     local function create_player(mngr, _x, _y, num)
         local pl = mngr.newEntity()
         --mngr.addComponent(pl, Comp_Physical_Body(_x, _y, 32, 64))
@@ -118,40 +119,20 @@ function System_Map()
                     map[i][id].t = "ground"
                     local xx, yy = i * TILESIZE, id * TILESIZE       
                     --if #players_init < 2 then
-                    local id = tonumber(j:match("%d"))
+                    local pid = tonumber(j:match("%d"))
                     --if #players_init < 3 then
-                    if not players_init[id] then
-                        local pl = create_player(self.get_manager(), xx, yy, id)
+                    if not players_init[pid] then
+                        local pl = create_player(self.get_manager(), xx, yy, pid)
                         table.insert(players_init, {x=xx, y=yy, entity=pl})
                     else                        
-                        local b = self.get_manager().getComponent(players_init[id].entity, 'physical_body')
-                        local c = self.get_manager().getComponent(players_init[id].entity, 'player_controls')
+                        local b = self.get_manager().getComponent(players_init[pid].entity, 'physical_body')
+                        local c = self.get_manager().getComponent(players_init[pid].entity, 'player_controls')
                         c.turned_on = false
-                        players_init[id].x, players_init[id].y = xx, yy
-                        b.x = players_init[id].x
-                        b.y = players_init[id].y
+                        players_init[pid].x, players_init[pid].y = xx, yy
+                        b.x = players_init[pid].x
+                        b.y = players_init[pid].y
                         b.vy = 0                        
                     end
-                    --players[1].x = i * TILESIZE
-                    --players[1].y = id * TILESIZE
-                --[[elseif j == "spawn2" then
-                    map[i][id].t = "ground"
-                    local xx, yy = i * TILESIZE, id * TILESIZE
-                    if #players_init < 2 then                    
-                        local pl = create_player(self.get_manager(), xx, yy)
-                        table.insert(players_init, {x=xx, y=yy, entity=pl})
-                    else
-                        local b = self.get_manager().getComponent(players_init[2].entity, 'physical_body')
-                        local c = self.get_manager().getComponent(players_init[2].entity, 'player_controls')
-                        c.turned_on = false                        
-                        players_init[2].x, players_init[2].y = xx, yy
-                        b.x = players_init[2].x
-                        b.y = players_init[2].y
-                        b.vy = 0
-                    end
-                    --players[2].x = i * TILESIZE
-                    --players[2].y = id * TILESIZE
-				]]--
                 elseif j == "ground" then
                     map[i][id].t = j
                     map[i][id].active = true

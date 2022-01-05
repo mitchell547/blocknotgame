@@ -125,27 +125,22 @@ function love.load()
     setup_music()
 end
 
-local function chk_lvls_fin()
+--[[local function chk_lvls_fin()
     for k, v in pairs(Game.levels_finished) do
         if v then lvls_checks.buttons[k].text = "+" end
     end
-end
+end]]--
 
 function love.update(dt)
     love.window.setTitle(love.timer.getFPS() .. " FPS")
     if game_state == "menu" then
         --menu_btns.Update()
         MenuUpdate()
-    --[[elseif game_state == "levels" then
-        lvls_btns.Update()
-        lvls_checks.Update()
-        lvls_checks.chosen_id = lvls_btns.chosen_id
-        ]]--
     elseif game_state == "game" then
         Game.update(dt)        
         if GAMESTATE == 'end' then
             game_state = "menu"
-            chk_lvls_fin()
+            --chk_lvls_fin()
         end
     end    
 end
@@ -154,11 +149,8 @@ function love.keypressed(key)
     if key == "m" then
         App.switchPlayback()
     end
-    if game_state == "menu" then
-        --menu_btns.Keypressed(key)
+    if game_state == "menu" then        
         MenuKeypressed(key)
-    --elseif game_state == "levels" then
-    --    lvls_btns.Keypressed(key)
     elseif game_state == "game" then
         Game.keypressed(key)
     end
@@ -172,21 +164,6 @@ end
 function love.draw()
     if game_state == "menu" then
         MenuDraw()
-    --[[    COLOR_PUSH()
-        love.graphics.setColor(1.0, 1.0, 0.4, 1.0)
-        menu_btns.Draw()
-        play_scr:draw()
-        help_scr:draw()
-        cred_scr:draw()
-        exit_scr:draw()
-        COLOR_POP()
-    elseif game_state == "levels" then
-        COLOR_PUSH()
-        love.graphics.setColor(0.6, 0.6, 1.0, 1.0)
-        lvls_btns.Draw()
-        lvls_checks.Draw()
-        COLOR_POP()
-        ]]--
     elseif game_state == "game" then
         Game.draw()
     end
