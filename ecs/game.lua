@@ -101,6 +101,29 @@ local function goal_check_out(self, args)
     end
 end
 
+collided_tiles = {}
+
+local function flash_collided_tile(self, args)	
+    local i, j = args.block.i, args.block.j
+    if self.map[i][j].t == 'ground' and self.map[i][j].active then
+		print("flash", i, j)
+        table.insert(collided_tiles, {i, j})
+    end
+end
+
+local function leave_collided_tile(self, args)	
+    local i, j = args.block.i, args.block.j
+    --if self.map[i][j].t == 'ground' and self.map[i][j].active then
+        --table.insert(collided_tiles, {i, j})
+		for k, v in pairs(collided_tiles) do
+			if v[1] == i and v[2] == j then
+				table.remove(collided_tiles, k)
+				--return
+			end
+		end
+    --end
+end
+
 local function count_players_in_goal()
     local cnt = 0
     for k, v in pairs(goal_info.plrs) do
@@ -134,6 +157,9 @@ function game.load(par_app)
     goal_info.ecs = ecs
     event_mngr.CatchEvent("OnPlayerHitBlock", goal_check_callback, goal_info)
     event_mngr.CatchEvent("OnPlayerLeaveBlock", goal_check_out, goal_info)
+	
+	event_mngr.CatchEvent("OnPlayerHitBlock", flash_collided_tile, goal_info)
+    event_mngr.CatchEvent("OnPlayerLeaveBlock", leave_collided_tile, goal_info)
     --map.LoadMap(1)
     
     --game.players_count = map.GetPlayersCnt()
@@ -340,6 +366,13 @@ function game.draw()
     end
     
     game.cur_script.draw()
+	
+	--[[	*debug*
+	for k, v in pairs(collided_tiles) do
+		love.graphics.setColor(0.8, 0.8, 0.2, 0.75)
+        love.graphics.rectangle('fill', v[1]*TILESIZE+1, v[2]*TILESIZE+1, TILESIZE-2, TILESIZE-2)
+	end
+	]]--
 end
 
 return game

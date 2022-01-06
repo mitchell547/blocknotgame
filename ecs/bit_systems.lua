@@ -26,7 +26,7 @@ function System_Physics()
                 --body.ax = -body.vx*20
                 body.ax = -body.vx*6
                 body.vx, body.vy = body.vx + body.ax*dt, body.vy + body.ay*dt
-                body.x, body.y = body.x + body.vx*TILESIZE*dt, body.y + body.vy*TILESIZE*dt
+                --body.x, body.y = body.x + body.vx*TILESIZE*dt, body.y + body.vy*TILESIZE*dt	-- moved to collision system
                 body.ax, body.ay = 0, 0
             end
 		end
@@ -252,18 +252,18 @@ function System_Collisions(_map, _events)
 			return "U" end
 	end
     
-    local function is_collided(plrid, block)
+    local function is_collided(plrid, block_ij)
         for k, v in pairs(collided[plrid]) do
-            if v[1] == block[1] and v[2] == block[2] then
+            if v[1] == block_ij[1] and v[2] == block_ij[2] then
                 return true
             end
         end
         return false
     end
     
-    local function remove_collided(plrid, block)
+    local function remove_collided(plrid, block_ij)
         for k, v in pairs(collided[plrid]) do
-            if v[1] == block[1] and v[2] == block[2] then
+            if v[1] == block_ij[1] and v[2] == block_ij[2] then
                 table.remove(collided[plrid], k)
                 --[[collided[plrid][k] = nil
                 for i = k, #(collided[plrid])-1 do
@@ -275,6 +275,10 @@ function System_Collisions(_map, _events)
         end
     end
     
+	local function is_solid_block(block_obj)
+		return (block_obj.t == 'ground' and block_obj.active)
+	end
+	
     function self.update(dt)
         players_in_goal = 0
         for id, e in pairs(self.subscribers) do
@@ -282,66 +286,61 @@ function System_Collisions(_map, _events)
             local xh, yh = math.floor(plr.x / TILESIZE + 0.5), math.floor(plr.y / TILESIZE + 0.5)
             local goal_checked = false
             if not collided[id] then collided[id] = {} end
+			
+			local tmp_plr = {}
+			tmp_plr.x = plr.x
+			tmp_plr.y = plr.y
+			tmp_plr.w = plr.w
+			tmp_plr.h = plr.h
+			tmp_plr.y = tmp_plr.y + plr.vy*TILESIZE*dt
+			
+			
+			
+			local y_move_acceptable = true
+			local x_move_acceptable = true
+			
+			local min_oh = 0000
+			local min_ow = 0
+			
+			local max_collision = {}
             
-            for i = math.max(-1, xh-1), math.min(maxw, xh+1) do
-                --if e.player_controls.turned_on then break end   -- hack...
+            for i = math.max(-1, xh-1), math.min(maxw, xh+1) do                
                 for j = math.max(-1, yh-1), math.min(maxh, yh+2) do
-                    if map[i] and map[i][j] then -- and (map[i][j].active or map[i][j].t == 'goal') then
-                        local ow, oh = get_overlap(plr, map[i][j])
-                        --if ow ~= 0 and oh ~= 0 then 
-                        local ret_coef = math.min(math.abs(ow), math.abs(oh)) * 0.9                        
+                    if map[i] and map[i][j] then 
+					
+                        local ow, oh = get_overlap(tmp_plr, map[i][j])
+						--local ow2, oh2 = get_overlap(tmp_plr_h, map[i][j])
                         
-                        --ow = ow - plr.vx * ret_coef * dt
-                        --oh = oh - plr.vy * ret_coef * dt
+						if (is_solid_block(map[i][j])) then
+							--print(ow2, oh)
+							--if (math.abs(oh) > EPS) then y_move_acceptable = false end
+							--if (math.abs(ow2) > EPS) then x_move_acceptable = false end
+							
+							--if (math.abs(oh) > math.abs(min_oh)) then min_oh = oh end
+							--if (math.abs(ow2) < math.abs(min_ow)) then min_ow = ow2 end
+							
+							if (#max_collision == 0 and math.abs(ow) > EPS) then 
+								max_collision = {ow, oh} 
+							else
+								if (math.abs(ow) > EPS and ow > max_collision[1]) then
+									max_collision = {ow, oh}
+								end
+							end
+						
                         
-                        --plr.x = plr.x - plr.vx * 0.8 * dt
-                        --plr.y = plr.y - plr.vy * 0.8 * dt
-                        -- ???
-                        
-                        local nx, ny = plr.vx, plr.vy
-                        local vel_len = math.sqrt(nx*nx + ny*ny)
-                        nx, ny = nx / vel_len, ny / vel_len
-                        ow = ow - nx * ret_coef
-                        oh = oh - ny * ret_coef
-                        
-                        if math.abs(ow) > EPS and math.abs(oh) > EPS then
-                            if map[i][j].t == 'ground' and map[i][j].active then    -- means 'solid' block
-                                --local col_s = collision_side(plr, map[i][j], dt)
-                                --[[local prevow, prevoh = ow, oh
-                                local ow_, oh_ = ow, oh
-                                local iter = 1
-                                repeat
-                                    prevow, prevoh = ow_, oh_
-                                    ow_, oh_ = get_overlap({x=plr.x-plr.vx*dt*(iter*0.2), y=plr.y-plr.vy*dt*(iter*0.2), w=plr.w, h=plr.h}, map[i][j])
-                                    iter = iter + 1 
-                                until math.abs(ow_) > 0 and math.abs(oh_) > 0 and iter <= 5
-                                ]]--
-                                if math.abs(ow) < math.abs(oh) then 
-                                --if math.abs(prevow) < math.abs(prevoh) then 
-                                --if col_s == 'R' or col_s == 'L' then
-                                    ow = ow + nx * ret_coef
-                                    plr.x = plr.x - ow
-                                    --plr.vx = 0
-                                else
-                                    --love.filesystem.append("log.phys", "ha!\r\n")
-                                    --if id == 1 then
-                                    --    print('!!!', ow, oh) end
-                                    oh = oh + ny * ret_coef
-                                    plr.y = plr.y - oh
-                                    plr.vy = 0
-                                end
-
-                                if math.abs(ow) > math.abs(oh) and oh > 0 then 
-                                --if col_s == 'D' then
-                                    vert_coll = true
-                                    plr.on_floor = true
-                                end
-                            elseif map[i][j].t == 'goal' and not goal_checked then
-                                --goal_checked = true
-                                --players_in_goal = players_in_goal + 1
-                            end
+							if math.abs(ow) > math.abs(oh) and oh > 0 then 
+							--if col_s == 'D' then
+								vert_coll = true
+								plr.on_floor = true
+								plr.vy = 0
+							end
+							
+						end
+						
+                        if  math.abs(oh) > EPS then
                             
                             if not is_collided(id, {i, j}) then
+								print("collision1", i, j)
                                 event_manager.FireEvent("OnPlayerHitBlock", nil, {player_id=id, block={i=i, j=j}})
                                 table.insert(collided[id], {i, j})
                             end
@@ -354,9 +353,86 @@ function System_Collisions(_map, _events)
                         --end
                     end
                     
+					
                 end
             end
+	
+			if y_move_acceptable then 
+				--print(plr.vy)
+				local dy = (#max_collision > 0) and max_collision[2] or 0
+				if not e.player_controls.turned_on then
+					plr.y = plr.y + plr.vy*TILESIZE*dt - dy
+				end
+				--plr.y = plr.y + min_oh
+			else
+				--plr.y = plr.y + min_oh
+			end
+			
+			local tmp_plr_h = {}
+			tmp_plr_h.x = plr.x
+			tmp_plr_h.y = plr.y
+			tmp_plr_h.w = plr.w
+			tmp_plr_h.h = plr.h
+			tmp_plr_h.x = tmp_plr_h.x + plr.vx*TILESIZE*dt
+			
+			max_collision = {}
+			
+			for i = math.max(-1, xh-1), math.min(maxw, xh+1) do                
+                for j = math.max(-1, yh-1), math.min(maxh, yh+2) do
+                    if map[i] and map[i][j] then 
+					
+                        --local ow, oh = get_overlap(tmp_plr, map[i][j])
+						local ow2, oh2 = get_overlap(tmp_plr_h, map[i][j])
+                        
+						if (is_solid_block(map[i][j])) then
+							print(ow2, oh2)
+							--if (math.abs(oh) > EPS) then y_move_acceptable = false end
+							--if (math.abs(ow2) > EPS) then x_move_acceptable = false end
+							
+							--if (math.abs(oh) < math.abs(min_oh)) then min_oh = oh end
+							--if (math.abs(ow2) > math.abs(min_ow)) then min_ow = ow2 end
+						
+							if (#max_collision == 0 and math.abs(oh2) > EPS) then 
+								max_collision = {ow2, oh2} 
+							else
+								if (math.abs(oh2) > EPS and oh2 > max_collision[2]) then
+									max_collision = {ow2, oh2}
+								end
+							end
+							
+						end
+						
+                        if math.abs(ow2) > EPS  then
+                            
+                            if not is_collided(id, {i, j}) then
+								print("collision2", i, j)
+                                event_manager.FireEvent("OnPlayerHitBlock", nil, {player_id=id, block={i=i, j=j}})
+                                table.insert(collided[id], {i, j})
+                            end
+                        else
+                            if is_collided(id, {i, j}) then
+                                event_manager.FireEvent("OnPlayerLeaveBlock", nil, {player_id=id, block={i=i, j=j}})
+                                remove_collided(id, {i, j})
+                            end
+                        end
+                        --end
+                    end
+                    
+					
+                end
+            end
+			
             
+			if x_move_acceptable then 
+				--print("min ow", min_ow)
+				local dx = (#max_collision > 0) and max_collision[1] or 0
+				if not e.player_controls.turned_on then
+					plr.x = plr.x + plr.vx*TILESIZE*dt - dx
+				end
+				--plr.x = plr.x + min_ow
+			else
+				--plr.x = plr.x + min_ow
+			end
             
         end
     end
